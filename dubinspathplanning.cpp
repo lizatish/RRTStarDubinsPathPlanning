@@ -213,50 +213,50 @@ DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning_from_ori
     cds = generate_course(bMass, b.mode, c);
 
     originPath origin;
-    origin.px = cds.px;
-    origin.py = cds.py;
-    origin.pyaw = cds.pyaw;
-    origin.bcost = bcost;
-    origin.bmode = b.mode;
+    origin.x = cds.x;
+    origin.y = cds.y;
+    origin.yaw = cds.yaw;
+    origin.cost = bcost;
+    origin.mode = b.mode;
 
     return origin;
 }
-DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning(float sx, float sy, float syaw,
-                                                                        float ex, float ey, float eyaw, float c){
+DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning(float startX, float startY, float startYaw,
+                                                                        float exitX, float exitY, float exitYaw,
+                                                                        float curvature){
 
-    ex = ex - sx;
-    ey = ey - sy;
+    exitX = exitX - startX;
+    exitY = exitY - startY;
 
-    float lex = cos(syaw) * ex + sin(syaw) * ey;
-    float ley = - sin(syaw) * ex + cos(syaw) * ey;
-    float leyaw = eyaw - syaw;
+    float lex = cos(startYaw) * exitX + sin(startYaw) * exitY;
+    float ley = - sin(startYaw) * exitX + cos(startYaw) * exitY;
+    float leyaw = exitYaw - startYaw;
 
     originPath orig;
-    orig = dubins_path_planning_from_origin(
-                lex, ley, leyaw, c);
-    vector<float> lpx = orig.px;
-    vector<float> lpy = orig.py;
-    vector<float> lpyaw = orig.pyaw;
-    string mode = orig.bmode;
-    float clen = orig.bcost;
+    orig = dubins_path_planning_from_origin(lex, ley, leyaw, curvature);
+    vector<float> lpx = orig.x;
+    vector<float> lpy = orig.y;
+    vector<float> lpyaw = orig.yaw;
+    string mode = orig.mode;
+    float clen = orig.cost;
 
     vector<float> px, py;
     for(int i = 0; i < lpx.size(); i++){
-        px.push_back(cos(-syaw) * lpx[i] + sin(-syaw) * lpy[i] + sx);
-        py.push_back(- sin(-syaw) * lpx[i] + cos(-syaw) * lpy[i] + sy);
+        px.push_back(cos(-startYaw) * lpx[i] + sin(-startYaw) * lpy[i] + startX);
+        py.push_back(- sin(-startYaw) * lpx[i] + cos(-startYaw) * lpy[i] + startY);
     }
 
     vector<float> pyaw;
     for(int i = 0; i < lpyaw.size(); i++){
-        pyaw.push_back(pi_2_pi(lpyaw[i] + syaw));
+        pyaw.push_back(pi_2_pi(lpyaw[i] + startYaw));
     }
 
     originPath res;
-    res.px = px;
-    res.py = py;
-    res.pyaw = pyaw;
-    res.bmode = mode;
-    res.bcost = clen;
+    res.x = px;
+    res.y = py;
+    res.yaw = pyaw;
+    res.mode = mode;
+    res.cost = clen;
     return res;
 }
 
@@ -277,11 +277,8 @@ DubinsPathPlanning::coords DubinsPathPlanning::generate_course(float* length, st
         }
 
         while (pd < abs(length[i] - d)){
-            //
-            //cout << d << " " << pd << " " << length[i] << endl;
             px.push_back(px[px.size()-1] + d * c * cos(pyaw[pyaw.size()-1]));
             py.push_back(py[py.size()-1] + d * c * sin(pyaw[pyaw.size()-1]));
-
 
             if (mode[i] == 'L'){
                 pyaw.push_back(pyaw[pyaw.size()-1] + d);
@@ -311,7 +308,7 @@ DubinsPathPlanning::coords DubinsPathPlanning::generate_course(float* length, st
     }
 
     coords p;
-    p.px = px;
-    p.py = py;
+    p.x = px;
+    p.y = py;
     return p;
 }

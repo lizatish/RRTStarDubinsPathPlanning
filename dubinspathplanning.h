@@ -17,17 +17,17 @@ private:
     };
 
     struct coords{
-        vector<float> px;
-        vector<float> py;
-        vector<float> pyaw;
+        vector<float> x;
+        vector<float> y;
+        vector<float> yaw;
     };
 public:
     struct originPath{
-        vector<float> px;
-        vector<float> py;
-        vector<float> pyaw;
-        string bmode;
-        float bcost;
+        vector<float> x;
+        vector<float> y;
+        vector<float> yaw;
+        string mode;
+        float cost;
     };
     DubinsPathPlanning();
 
@@ -43,13 +43,9 @@ public:
 
     originPath dubins_path_planning_from_origin(float ex, float ey, float feyaw, float c);
     originPath dubins_path_planning(float sx, float sy, float syaw,
-                              float ex, float ey, float eyaw, float c);
+                                    float ex, float ey, float eyaw, float c);
 
     coords generate_course(float* length, string mode, float c);
-    //void plot_arrow(x, y, yaw, length=1.0, width=0.5, fc="r", ec="k");
-
-    int **zip(int *arr1, string arr2, int length);
-
 };
 
 #endif // DUBINSPATHPLANNING_H
