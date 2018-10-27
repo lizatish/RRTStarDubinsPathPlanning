@@ -15,6 +15,13 @@ private:
         float q;
         string mode;
     };
+
+    struct coords{
+        vector<float> px;
+        vector<float> py;
+        vector<float> pyaw;
+    };
+public:
     struct originPath{
         vector<float> px;
         vector<float> py;
@@ -22,12 +29,6 @@ private:
         string bmode;
         float bcost;
     };
-    struct coords{
-        vector<float> px;
-        vector<float> py;
-        vector<float> pyaw;
-    };
-public:
     DubinsPathPlanning();
 
     float mod2pi(float theta);
@@ -44,7 +45,7 @@ public:
     originPath dubins_path_planning(float sx, float sy, float syaw,
                               float ex, float ey, float eyaw, float c);
 
-    coords generate_course(int* length, string mode, float c);
+    coords generate_course(float* length, string mode, float c);
     //void plot_arrow(x, y, yaw, length=1.0, width=0.5, fc="r", ec="k");
 
     int **zip(int *arr1, string arr2, int length);

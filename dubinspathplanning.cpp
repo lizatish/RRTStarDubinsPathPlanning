@@ -198,7 +198,8 @@ DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning_from_ori
 
     for (int i = 0; i < 6; i++){
         v1 = (this->*planner[i])(alpha, beta, d);
-        if (v1.t == NAN){
+
+        if (isnan(v1.t)){
             continue;
         }
 
@@ -208,12 +209,14 @@ DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning_from_ori
             b.p = v1.p;
             b.q = v1.q;
             b.mode = v1.mode;
+            bcost = cost;
         }
-        bcost = cost;
+        //        cout << b.t << " " << b.p<< " " << b.q << " "<< b.mode << endl;
     }
 
     coords cds;
-    int bMass[3] = {b.t, b.p, b.q};
+    float bMass[3] = {b.t, b.p, b.q};
+
     cds = generate_course(bMass, b.mode, c);
 
     originPath origin;
@@ -223,10 +226,11 @@ DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning_from_ori
     origin.bcost = bcost;
     origin.bmode = b.mode;
 
+
     return origin;
 }
 DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning(float sx, float sy, float syaw,
-                                              float ex, float ey, float eyaw, float c){
+                                                                        float ex, float ey, float eyaw, float c){
 
     ex = ex - sx;
     ey = ey - sy;
@@ -264,12 +268,11 @@ DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning(float sx
     return res;
 }
 
-DubinsPathPlanning::coords DubinsPathPlanning::generate_course(int* length, string mode, float c){
+DubinsPathPlanning::coords DubinsPathPlanning::generate_course(float* length, string mode, float c){
 
     vector<float> px = {0.0};
     vector<float> py = {0.0};
     vector<float> pyaw = {0.0};
-
     for (int i = 0; i < mode.length(); i++){
 
         //int** mas = zip(mode, length, 3);
@@ -285,38 +288,47 @@ DubinsPathPlanning::coords DubinsPathPlanning::generate_course(int* length, stri
         }
 
         while (pd < abs(length[i] - d)){
-            px.push_back(px[-1] + d * c * cos(pyaw[-1]));
-            py.push_back(py[-1] + d * c * sin(pyaw[-1]));
+            //
+            //cout << d << " " << pd << " " << length[i] << endl;
+            px.push_back(px[px.size()-1] + d * c * cos(pyaw[pyaw.size()-1]));
+            py.push_back(py[py.size()-1] + d * c * sin(pyaw[pyaw.size()-1]));
 
 
             if (mode[i] == 'L'){
-                pyaw.push_back(pyaw[-1] + d);
+                pyaw.push_back(pyaw[pyaw.size()-1] + d);
             }
             else if (mode[i] == 'S'){
-                pyaw.push_back(pyaw[-1]);
+                pyaw.push_back(pyaw[pyaw.size()-1]);
             }
             else if (mode[i] == 'R'){
-                pyaw.push_back(pyaw[-1] - d);
+                pyaw.push_back(pyaw[pyaw.size()-1] - d);
             }
             pd += d;
+//            for(int j = 0; j < pyaw.size();j++){
+//                cout << pyaw[j] << " ";
+//            }
+            //cout << endl;
+           // cout << px[px.size()-1] + d * c * cos(pyaw[pyaw.size()-1]) << endl;
         }
-
+        //cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
         d = length[i] - pd;
-        px.push_back(px[-1] + d * c * cos(pyaw[-1]));
-        py.push_back(py[-1] + d * c * sin(pyaw[-1]));
+        px.push_back(px[px.size()-1] + d * c * cos(pyaw[pyaw.size()-1]));
+        py.push_back(py[py.size()-1] + d * c * sin(pyaw[pyaw.size()-1]));
 
         if (mode[i] == 'L'){
-            pyaw.push_back(pyaw[-1] + d);
+            pyaw.push_back(pyaw[pyaw.size()-1] + d);
         }
         else if (mode[i] == 'S'){
-            pyaw.push_back(pyaw[-1]);
+            pyaw.push_back(pyaw[pyaw.size()-1]);
         }
         else if (mode[i] == 'R'){
-            pyaw.push_back(pyaw[-1] - d);
+            pyaw.push_back(pyaw[pyaw.size()-1] - d);
         }
         pd += d;
     }
-
+//    for(int i = 0; i < px.size();i++){
+//        cout << px[i] << " " <<py[i] <<" " << pyaw[i] << endl;
+//    }
     coords p;
     p.px = px;
     p.py = py;
