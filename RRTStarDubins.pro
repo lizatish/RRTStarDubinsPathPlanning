@@ -14,9 +14,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+########################### ROS ##########################
+INCLUDEPATH += /opt/ros/kinetic/include
+INCLUDEPATH += /home/liza/catkin_ws/devel/include
+
+LIBS += -L/opt/ros/kinetic/lib
+LIBS += -lroscpp -lrosconsole
+LIBS += -lroscpp_serialization -lrostime
+LIBS += -lxmlrpcpp -lcpp_common
+LIBS += -lrosconsole -lrosconsole_backend_interface
+LIBS += -lconsole_bridge -lrosconsole_log4cxx
+LIBS += -lboost_system
+
 SOURCES += \
         main.cpp \
-    dubinspathplanning.cpp
+    dubinspathplanning.cpp \
+    rrt.cpp \
+    node.cpp
 
 HEADERS += \
-    dubinspathplanning.h
+    dubinspathplanning.h \
+    rrt.h \
+    node.h
