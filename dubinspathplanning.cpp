@@ -169,17 +169,11 @@ DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning_from_ori
     float  dy = ey;
     float D = sqrt(pow(dx, 2.0) + pow(dy, 2.0));
     float d = D / c;
-    // #  print(dx, dy, D, d);
 
     float theta = mod2pi(atan2(dy, dx));
     float alpha = mod2pi(- theta);
     float beta = mod2pi(eyaw - theta);
-    // #  print(theta, alpha, beta, d);
-
-    string planners[6] = {"LSL", "RSR", "LSR", "RSL", "RLR", "LRL"};
-
     float bcost = INFINITY;
-
     value b;
     b.t = NAN;
     b.p = NAN;
@@ -211,7 +205,6 @@ DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning_from_ori
             b.mode = v1.mode;
             bcost = cost;
         }
-        //        cout << b.t << " " << b.p<< " " << b.q << " "<< b.mode << endl;
     }
 
     coords cds;
@@ -225,7 +218,6 @@ DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning_from_ori
     origin.pyaw = cds.pyaw;
     origin.bcost = bcost;
     origin.bmode = b.mode;
-
 
     return origin;
 }
@@ -275,9 +267,6 @@ DubinsPathPlanning::coords DubinsPathPlanning::generate_course(float* length, st
     vector<float> pyaw = {0.0};
     for (int i = 0; i < mode.length(); i++){
 
-        //int** mas = zip(mode, length, 3);
-
-
         float pd = 0.0;
         float d;
         if (mode[i] == 'S'){
@@ -304,13 +293,7 @@ DubinsPathPlanning::coords DubinsPathPlanning::generate_course(float* length, st
                 pyaw.push_back(pyaw[pyaw.size()-1] - d);
             }
             pd += d;
-//            for(int j = 0; j < pyaw.size();j++){
-//                cout << pyaw[j] << " ";
-//            }
-            //cout << endl;
-           // cout << px[px.size()-1] + d * c * cos(pyaw[pyaw.size()-1]) << endl;
         }
-        //cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
         d = length[i] - pd;
         px.push_back(px[px.size()-1] + d * c * cos(pyaw[pyaw.size()-1]));
         py.push_back(py[py.size()-1] + d * c * sin(pyaw[pyaw.size()-1]));
@@ -326,67 +309,9 @@ DubinsPathPlanning::coords DubinsPathPlanning::generate_course(float* length, st
         }
         pd += d;
     }
-//    for(int i = 0; i < px.size();i++){
-//        cout << px[i] << " " <<py[i] <<" " << pyaw[i] << endl;
-//    }
+
     coords p;
     p.px = px;
     p.py = py;
     return p;
-}
-
-//def DubinsPathPlanning::plot_arrow(x, y, yaw, length=1.0, width=0.5, fc="r", ec="k"){
-
-//            import matplotlib.pyplot as plt
-
-//            if not isinstance(x, float):
-//        for (ix, iy, iyaw) in zip(x, y, yaw):
-//      plot_arrow(ix, iy, iyaw)
-//      else:
-//      plt.arrow(x, y, length * math.cos(yaw), length * math.sin(yaw),
-//        fc=fc, ec=ec, head_width=width, head_length=width)
-//      plt.plot(x, y)
-//}
-
-//      if __name__ == '__main__':
-//      print("Dubins path planner sample start!!")
-//      import matplotlib.pyplot as plt
-
-//      start_x = 1.0  # [m]
-//      start_y = 1.0  # [m]
-//      start_yaw = np.deg2rad(45.0)  # [rad]
-
-//      end_x = -3.0  # [m]
-//      end_y = -3.0  # [m]
-//      end_yaw = np.deg2rad(-45.0)  # [rad]
-
-//      curvature = 1.0
-
-//      px, py, pyaw, mode, clen = dubins_path_planning(start_x, start_y, start_yaw,
-//                                                      end_x, end_y, end_yaw, curvature)
-
-//      plt.plot(px, py, label="final course " + "".join(mode))
-
-//  # plotting
-//      plot_arrow(start_x, start_y, start_yaw)
-//      plot_arrow(end_x, end_y, end_yaw)
-
-//  #  for (ix, iy, iyaw) in zip(px, py, pyaw):
-//  #  plot_arrow(ix, iy, iyaw, fc="b")
-
-//      plt.legend()
-//      plt.grid(True)
-//      plt.axis("equal")
-//      plt.show()
-//}
-int** DubinsPathPlanning::zip(int *arr1, string arr2, int length)
-{
-    int **ret = new int*[length];
-    for(int i = 0; i<length; i++)
-    {
-        ret[i] = new int[2];
-        ret[i][0] = arr1[i];
-        ret[i][1] = arr2[i];
-    }
-    return ret;
 }
