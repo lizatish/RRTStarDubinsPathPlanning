@@ -41,7 +41,7 @@ public:
     vector<geometry_msgs::Point> Planning(geometry_msgs::Point s, geometry_msgs::Point g,
                        vector<float> map0, float curv, float mapSize0,int maxIter0 = 100);
 
-    vector<geometry_msgs::Point> formObstaclesCoordinatesFromMap(vector<float> map, int mapSize);
+    void formObstaclesCoordinatesFromMap(vector<float> map, int mapSize);
     Node* getRandomPoint();
     int getNearestListIndex(Node* rnd);
 
@@ -54,6 +54,8 @@ public:
     void rewire(Node* newNode, vector<int> nearinds);
 
     vector<int> find_near_nodes(Node* newNode);
+
+    float calc_dist_to_goal(float x, float y);
 
 
 

@@ -17,8 +17,7 @@ vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs
     curvature = curv;
 
     // Найти массив координат препятствий
-    vector<geometry_msgs::Point> obstacles;
-    obstacles = formObstaclesCoordinatesFromMap(map, mapSize);
+    formObstaclesCoordinatesFromMap(map, mapSize);
 
     nodeList.push_back(start);
 
@@ -43,20 +42,18 @@ vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs
     vector<geometry_msgs::Point> path = gen_final_course(lastIndex);
     return path;
 }
-vector<geometry_msgs::Point> formObstaclesCoordinatesFromMap(vector<float> map, int mapSize){
+void RRT::formObstaclesCoordinatesFromMap(vector<float> map, int mapSize){
 
-    vector<geometry_msgs::Point>  obstacles;
     for(int i = 0; i < mapSize; i++){
         for(int j = 0; j < mapSize; j++){
             if(map[mapSize * j + i] == 100){
                 geometry_msgs::Point p;
                 p.x = i;
                 p.y = j;
-                obstacles.push_back(p);
+                obstacleList.push_back(p);
             }
         }
     }
-    return obstacles;
 }
 
 Node* RRT::choose_parent(Node* newNode, vector<int> nearInds){
@@ -75,20 +72,16 @@ Node* RRT::choose_parent(Node* newNode, vector<int> nearInds){
         }
     }
 
-    float mincost = *std::min_element(dlist.begin(), dlist.end());
-
-    //////// ЧЕ ТУТ ПРОИСХОДИТ
-    auto min_value = *min_element(dlist.begin(), dlist.end());
-    vector<Node*>::iterator it = find(dlist.begin(), dlist.end(), min_value);
-    int minIndex = distance(dlist.begin(), it);
-
-    int minind = nearInds[dlist.index(mincost)];
+    float mincost = *min_element(dlist.begin(), dlist.end());
+    vector<float>::iterator it = find(dlist.begin(), dlist.end(), mincost);
+    int dlistIndex_mincost = distance(dlist.begin(), it);
+    int minind = nearInds[dlist[dlistIndex_mincost]];
 
     if (mincost == INFINITY){
         return newNode;
     }
 
-    newNode = steer(newNode, minIndex);
+    newNode = steer(newNode, minind);
 
     return newNode;
 }
@@ -192,15 +185,12 @@ vector<geometry_msgs::Point> RRT::gen_final_course(int goalInd){
         Node* node = nodeList[goalInd];
 
         for(int i = 0; i < node->path_x.size(); i++){
-            p.x = reversed(node->path_x[i]);
-            p.y = reversed(node->path_y[i]);
-
+            p.x = node->path_x[i];
+            p.y = node->path_y[i];
             path.push_back(p);
         }
-
         goalInd = node->parent;
     }
-
     p.x = start->x;
     p.y = start->y;
     path.push_back(p);
@@ -208,21 +198,29 @@ vector<geometry_msgs::Point> RRT::gen_final_course(int goalInd){
 }
 
 float RRT::calc_dist_to_goal(float x, float y){
-    return np.linalg.norm([x - end->x, y - end->y]);
+    return sqrt(pow(x - end->x, 2) + pow(y - end->y, 2));
 }
 
 vector<int> RRT::find_near_nodes(Node* newNode){
     int nnode = nodeList.size();
     float r = 50.0 * sqrt((log(nnode) / nnode));
 
-    dlist = [(node.x - newNode.x) ** 2 +
-            (node.y - newNode.y) ** 2 +
-            (node.yaw - newNode.yaw) ** 2
+    vector<float> dlist;
+    for(int i = 0; i < nodeList.size(); i++){
+        float k = pow(nodeList[i]->x - newNode->x, 2) +
+                pow(nodeList[i]->y - newNode->y, 2) +
+                pow(nodeList[i]->yaw - newNode->yaw, 2);
 
-            vector<int> nearInds;
-    for node in self.nodeList]
-            nearinds = [dlist.index(i) for i in dlist if i <= r ** 2]
-            return nearinds
+        dlist.push_back(k);
+    }
+
+    vector<int> nearinds;
+    for(int i = 0; i < dlist.size(); i++){
+        if(i <= r*r){
+            nearinds.push_back(i);
+        }
+    }
+    return nearinds;
 }
 
 void RRT::rewire(Node* newNode, vector<int> nearinds){
