@@ -22,6 +22,8 @@ public:
 
     Node();
     Node(float x0, float y0, float yaw0);
-   };
+//    float getX() const;
+//    void setX(float value);
+};
 
 #endif // NODE_H

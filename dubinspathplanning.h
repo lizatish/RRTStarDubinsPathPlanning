@@ -32,7 +32,7 @@ public:
     DubinsPathPlanning();
 
     float mod2pi(float theta);
-    int pi_2_pi(float angle);
+    float pi_2_pi(float angle);
 
     value LSL(float alpha, float beta, float d);
     value RSR(float alpha, float beta, float d);

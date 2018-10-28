@@ -39,7 +39,7 @@ public:
     RRT();
 
     vector<geometry_msgs::Point> Planning(geometry_msgs::Point s, geometry_msgs::Point g,
-                       vector<float> map0, float curv, float mapSize0,int maxIter0 = 100);
+                     vector<geometry_msgs::Point> ob /* vector<float> map0*/, float curv, float mapSize0,int maxIter0 = 100);
 
     void formObstaclesCoordinatesFromMap(vector<float> map, int mapSize);
     Node* getRandomPoint();

@@ -10,7 +10,7 @@ float DubinsPathPlanning::mod2pi(float theta){
 }
 
 
-int DubinsPathPlanning::pi_2_pi(float angle){
+float DubinsPathPlanning::pi_2_pi(float angle){
     return fmod((angle + M_PI), (2 * M_PI) - M_PI);
 }
 
@@ -310,5 +310,6 @@ DubinsPathPlanning::coords DubinsPathPlanning::generate_course(float* length, st
     coords p;
     p.x = px;
     p.y = py;
+    p.yaw = pyaw;
     return p;
 }
