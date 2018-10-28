@@ -2,8 +2,8 @@
 
 RRT::RRT(){
 }
-void RRT::Planning(geometry_msgs::Point s, geometry_msgs::Point g,
-                   vector<float> map0, float curv, float mapSize0,int maxIter0)
+vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs::Point g,
+                                           vector<float> map0, float curv, float mapSize0,int maxIter0)
 {
 
     start = new Node(s.x, s.y, s.z);
@@ -30,7 +30,7 @@ void RRT::Planning(geometry_msgs::Point s, geometry_msgs::Point g,
         Node* newNode = steer(rnd, nind);
 
         if (collisionCheck(newNode)){
-            int nearInds = find_near_nodes(newNode);
+            vector<int> nearInds = find_near_nodes(newNode);
             Node* newNode = choose_parent(newNode, nearInds);
             nodeList.push_back(newNode);
             rewire(newNode, nearInds);
@@ -40,10 +40,7 @@ void RRT::Planning(geometry_msgs::Point s, geometry_msgs::Point g,
     }
     int lastIndex = get_best_last_index();
 
-    if (lastIndex == NAN)
-        return NAN;
-
-    path = gen_final_course(lastIndex);
+    vector<geometry_msgs::Point> path = gen_final_course(lastIndex);
     return path;
 }
 vector<geometry_msgs::Point> formObstaclesCoordinatesFromMap(vector<float> map, int mapSize){
@@ -70,8 +67,8 @@ Node* RRT::choose_parent(Node* newNode, vector<int> nearInds){
     vector<float> dlist;
     for(int i = 0; i < nearInds.size(); i++){
         Node* tNode = steer(newNode, i);
-        if (collisionCheck(tNode, obstacleList)){
-            dlist.append(tNode.cost);
+        if (collisionCheck(tNode)){
+            dlist.push_back(tNode->cost);
         }
         else{
             dlist.push_back(INFINITY);
@@ -80,6 +77,7 @@ Node* RRT::choose_parent(Node* newNode, vector<int> nearInds){
 
     float mincost = *std::min_element(dlist.begin(), dlist.end());
 
+    //////// ЧЕ ТУТ ПРОИСХОДИТ
     auto min_value = *min_element(dlist.begin(), dlist.end());
     vector<Node*>::iterator it = find(dlist.begin(), dlist.end(), min_value);
     int minIndex = distance(dlist.begin(), it);
@@ -153,7 +151,7 @@ float RRT::get_best_last_index(){
     vector<int> goalinds;
     for (int k = 0; k < nodeList.size(); k++){
         Node* node = nodeList[k];
-        if(calc_dist_to_goal(node.x, node.y) <= XYTH){
+        if(calc_dist_to_goal(node->x, node->y) <= XYTH){
             goalinds.push_back(k);
         }
     }
@@ -190,100 +188,114 @@ vector<geometry_msgs::Point> RRT::gen_final_course(int goalInd){
     p.y = end->y;
     path.push_back(p);
 
-    while (nodeList[goalInd].parent != NAN){
-        Node* node = self.nodeList[goalInd];
-        for ((ix, iy) in zip(reversed(node->path_x), reversed(node->path_y)):
-             path.append([ix, iy])
+    while (nodeList[goalInd]->parent != NAN){
+        Node* node = nodeList[goalInd];
 
-             goalind = node.parent
-             path.append([self.start.x, self.start.y])
-             return path
+        for(int i = 0; i < node->path_x.size(); i++){
+            p.x = reversed(node->path_x[i]);
+            p.y = reversed(node->path_y[i]);
+
+            path.push_back(p);
+        }
+
+        goalInd = node->parent;
     }
 
-             def calc_dist_to_goal(self, x, y){
-             return np.linalg.norm([x - self.end.x, y - self.end.y])
+    p.x = start->x;
+    p.y = start->y;
+    path.push_back(p);
+    return path;
+}
+
+float RRT::calc_dist_to_goal(float x, float y){
+    return np.linalg.norm([x - end->x, y - end->y]);
+}
+
+vector<int> RRT::find_near_nodes(Node* newNode){
+    int nnode = nodeList.size();
+    float r = 50.0 * sqrt((log(nnode) / nnode));
+
+    dlist = [(node.x - newNode.x) ** 2 +
+            (node.y - newNode.y) ** 2 +
+            (node.yaw - newNode.yaw) ** 2
+
+            vector<int> nearInds;
+    for node in self.nodeList]
+            nearinds = [dlist.index(i) for i in dlist if i <= r ** 2]
+            return nearinds
+}
+
+void RRT::rewire(Node* newNode, vector<int> nearinds){
+
+    int nnode = nodeList.size();
+
+    for(int i = 0; i < nearinds.size(); i++){
+
+        Node* nearNode = nodeList[i];
+        Node* tNode = steer(nearNode, nnode - 1);
+
+        bool obstacleOK = collisionCheck(tNode);
+        bool imporveCost = nearNode->cost > tNode->cost;
+
+        if (obstacleOK && imporveCost){
+            nodeList[i] = tNode;
+        }
     }
+}
 
-             def find_near_nodes(self, newNode){
-             nnode = len(self.nodeList)
-             r = 50.0 * math.sqrt((math.log(nnode) / nnode))
-     #  r = self.expandDis * 5.0
-             dlist = [(node.x - newNode.x) ** 2 +
-             (node.y - newNode.y) ** 2 +
-             (node.yaw - newNode.yaw) ** 2
-             for node in self.nodeList]
-             nearinds = [dlist.index(i) for i in dlist if i <= r ** 2]
-             return nearinds
+int RRT::getNearestListIndex(Node* rnd){
+
+    vector<Node*> dlist;
+    for(int i = 0; i < nodeList.size(); i++){
+        Node* n = new Node(pow(nodeList[i]->x - rnd->x, 2),
+                           pow(nodeList[i]->y - rnd->y, 2),
+                           pow(nodeList[i]->yaw - rnd->yaw, 2));
+        dlist.push_back(n);
     }
+    auto min_value = *min_element(dlist.begin(), dlist.end());
+    vector<Node*>::iterator it = find(dlist.begin(), dlist.end(), min_value);
+    int minIndex = distance(dlist.begin(), it);
 
-             def rewire(self, newNode, nearinds){
+    return minIndex;
+}
+bool RRT::collisionCheck(Node* node){
 
-             nnode = len(self.nodeList)
+    float ix, iy, dx, dy, d;
+    geometry_msgs::Point p;
+    for (int i = 0; i < obstacleList.size(); i++){
 
-             for i in nearinds:
-             nearNode = self.nodeList[i]
-             tNode = self.steer(nearNode, nnode - 1)
+        p = obstacleList.at(i);
 
-             obstacleOK = self.CollisionCheck(tNode, self.obstacleList)
-             imporveCost = nearNode.cost > tNode.cost
+        ix = node->path_x[i];
+        iy = node->path_y[i];
+        dx = p.x - ix;
+        dy = p.y - iy;
 
-             if obstacleOK and imporveCost:
-             self.nodeList[i] = tNode
+        d = dx * dx + dy * dy;
+        if (d <= pow(minDistToObstacle, 2))
+            return false;
     }
+    return true;
+}
+//            def DrawGraph(self, rnd=None){
+//                plt.clf()
+//                if rnd is not None:
+//                plt.plot(rnd.x, rnd.y, "^k")
+//                for node in self.nodeList:
+//                if node.parent is not None:
+//                plt.plot(node.path_x, node.path_y, "-g")
+//    #  plt.plot([node.x, self.nodeList[node.parent].x], [
+//    #  node.y, self.nodeList[node.parent].y], "-g")
 
-             int RRT::getNearestListIndex(Node* rnd){
+//                for (ox, oy, size) in self.obstacleList:
+//                plt.plot(ox, oy, "ok", ms=30 * size)
 
-             vector<Node*> dlist;
-             for(int i = 0; i < nodeList.size(); i++){
-             Node* n = new Node(pow(nodeList[i]->x - rnd->x, 2),
-                                pow(nodeList[i]->y - rnd->y, 2),
-                                pow(nodeList[i]->yaw - rnd->yaw, 2));
-             dlist.push_back(n);
-    }
-             auto min_value = *min_element(dlist.begin(), dlist.end());
-             vector<Node*>::iterator it = find(dlist.begin(), dlist.end(), min_value);
-             int minIndex = distance(dlist.begin(), it);
+//                dubins_path_planning.plot_arrow(
+//                self.start.x, self.start.y, self.start.yaw)
+//                dubins_path_planning.plot_arrow(
+//                self.end.x, self.end.y, self.end.yaw)
 
-             return minIndex;
-    }
-             bool RRT::collisionCheck(Node* node){
-
-             float ix, iy, dx, dy, d;
-             geometry_msgs::Point p;
-             for (int i = 0; i < obstacleList.size(); i++){
-
-             p = obstacleList.at(i);
-
-             ix = node->path_x[i];
-             iy = node->path_y[i];
-             dx = p.x - ix;
-             dy = p.y - iy;
-
-             d = dx * dx + dy * dy;
-             if (d <= pow(minDistToObstacle, 2))
-             return false;
-    }
-             return true;
-    }
-             //            def DrawGraph(self, rnd=None){
-             //                plt.clf()
-             //                if rnd is not None:
-             //                plt.plot(rnd.x, rnd.y, "^k")
-             //                for node in self.nodeList:
-             //                if node.parent is not None:
-             //                plt.plot(node.path_x, node.path_y, "-g")
-             //    #  plt.plot([node.x, self.nodeList[node.parent].x], [
-             //    #  node.y, self.nodeList[node.parent].y], "-g")
-
-             //                for (ox, oy, size) in self.obstacleList:
-             //                plt.plot(ox, oy, "ok", ms=30 * size)
-
-             //                dubins_path_planning.plot_arrow(
-             //                self.start.x, self.start.y, self.start.yaw)
-             //                dubins_path_planning.plot_arrow(
-             //                self.end.x, self.end.y, self.end.yaw)
-
-             //                plt.axis([-2, 15, -2, 15])
-             //                plt.grid(True)
-             //                plt.pause(0.01)
-             //            }
+//                plt.axis([-2, 15, -2, 15])
+//                plt.grid(True)
+//                plt.pause(0.01)
+//            }

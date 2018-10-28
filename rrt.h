@@ -37,8 +37,9 @@ private:
 
 public:
     RRT();
-    void Planning(geometry_msgs::Point start, geometry_msgs::Point goal,
-                  vector<float> map, float curv, float map_size,int maxItem = 100);
+
+    vector<geometry_msgs::Point> Planning(geometry_msgs::Point s, geometry_msgs::Point g,
+                       vector<float> map0, float curv, float mapSize0,int maxIter0 = 100);
 
     vector<geometry_msgs::Point> formObstaclesCoordinatesFromMap(vector<float> map, int mapSize);
     Node* getRandomPoint();
@@ -50,6 +51,10 @@ public:
     vector<geometry_msgs::Point> gen_final_course(int goalInd);
     float get_best_last_index();
     Node* choose_parent(Node* newNode, vector<int> nearInds);
+    void rewire(Node* newNode, vector<int> nearinds);
+
+    vector<int> find_near_nodes(Node* newNode);
+
 
 
 };
