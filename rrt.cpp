@@ -12,7 +12,7 @@ vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs
     minRand = 0;
     maxRand = mapSize0;
     goalSampleRate = 10;
-    maxIter = maxIter0;
+    maxIter = 100;
     //    vector<float> map = map0;
     curvature = curv;
 
@@ -33,7 +33,7 @@ vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs
             vector<int> nearInds = find_near_nodes(newNode);
             newNode = choose_parent(newNode, nearInds);
             nodeList.push_back(newNode);
-            rewire(newNode, nearInds);
+            rewire(nearInds);
         }
         //        if (animation and i % 5 == 0)
         //            self.DrawGraph(rnd=rnd);
@@ -114,7 +114,7 @@ Node* RRT::steer(Node* rnd, int nind){
         newNode->path_x = path.x;
         newNode->path_y = path.y;
     }
-    newNode->cost = path.cost;
+    newNode->cost = nearestNode->cost + path.cost;
     newNode->parent = nind;
 
     return newNode;
@@ -188,16 +188,16 @@ vector<geometry_msgs::Point> RRT::gen_final_course(int goalInd){
     p.y = end->y;
     path.push_back(p);
 
-    while (nodeList[goalInd]->parent != 0){
+    do {
         Node* node = nodeList[goalInd];
 
-        for(int i = 0; i < node->path_x.size(); i++){
+        for(int i = node->path_x.size() - 1; i >= 0; i--){
             p.x = node->path_x[i];
             p.y = node->path_y[i];
             path.push_back(p);
         }
         goalInd = node->parent;
-    }
+    }while(nodeList[goalInd]->parent != 0);
     p.x = start->x;
     p.y = start->y;
     path.push_back(p);
@@ -230,12 +230,10 @@ vector<int> RRT::find_near_nodes(Node* newNode){
     return nearinds;
 }
 
-void RRT::rewire(Node* newNode, vector<int> nearinds){
+void RRT::rewire(vector<int> nearinds){
 
     int nnode = nodeList.size();
-
     for(int i = 0; i < nearinds.size(); i++){
-
         Node* nearNode = nodeList[i];
         Node* tNode = steer(nearNode, nnode - 1);
 
@@ -250,16 +248,15 @@ void RRT::rewire(Node* newNode, vector<int> nearinds){
 
 int RRT::getNearestListIndex(Node* rnd){
 
-    // на питоне вместо Node* - class 'list'
-    vector<Node*> dlist;
+    vector<float> dlist;
     for(int i = 0; i < nodeList.size(); i++){
-        Node* n = new Node(pow(nodeList[i]->x - rnd->x, 2),
-                           pow(nodeList[i]->y - rnd->y, 2),
-                           pow(nodeList[i]->yaw - rnd->yaw, 2));
+        float n = pow(nodeList[i]->x - rnd->x, 2) +
+                pow(nodeList[i]->y - rnd->y, 2) +
+                pow(nodeList[i]->yaw - rnd->yaw, 2);
         dlist.push_back(n);
     }
     auto min_value = *min_element(dlist.begin(), dlist.end());
-    vector<Node*>::iterator it = find(dlist.begin(), dlist.end(), min_value);
+    vector<float>::iterator it = find(dlist.begin(), dlist.end(), min_value);
     int minIndex = distance(dlist.begin(), it);
 
     return minIndex;
@@ -271,15 +268,17 @@ bool RRT::collisionCheck(Node* node){
     for (int i = 0; i < obstacleList.size(); i++){
 
         p = obstacleList.at(i);
+        for(int j = 0; j < node->path_x.size(); j++){
 
-        ix = node->path_x[i];
-        iy = node->path_y[i];
-        dx = p.x - ix;
-        dy = p.y - iy;
+            ix = node->path_x[j];
+            iy = node->path_y[j];
+            dx = p.x - ix;
+            dy = p.y - iy;
 
-        d = dx * dx + dy * dy;
-        if (d <= pow(minDistToObstacle, 2))
-            return false;
+            d = dx * dx + dy * dy;
+            if (d <= pow(minDistToObstacle, 2))
+                return false;
+        }
     }
     return true;
 }

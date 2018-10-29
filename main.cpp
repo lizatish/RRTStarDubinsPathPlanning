@@ -28,11 +28,11 @@ int main(int argc, char *argv[])
     geometry_msgs::Point start;
     start.x = 0;
     start.y = 0;
-    start.z = 2*0.785398;
+    start.z = 0;
     geometry_msgs::Point goal;
-    goal.x = 12;
-    goal.y = 12;
-    goal.z = 2*0.785398;
+    goal.x = 8;
+    goal.y = 0;
+    goal.z = 0;
 
     RRT rrt;
     vector<geometry_msgs::Point> path = rrt.Planning(start, goal, obstacleList, 1, 15);

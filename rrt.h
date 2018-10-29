@@ -29,7 +29,7 @@ private:
     int goalSampleRate;
     int maxIter;
 
-    float minDistToObstacle = 0.04;
+    float minDistToObstacle = 1;
     vector<Node*> nodeList;
     float curvature;
 
@@ -39,7 +39,7 @@ public:
     RRT();
 
     vector<geometry_msgs::Point> Planning(geometry_msgs::Point s, geometry_msgs::Point g,
-                     vector<geometry_msgs::Point> ob /* vector<float> map0*/, float curv, float mapSize0,int maxIter0 = 100);
+                     vector<geometry_msgs::Point> ob /* vector<float> map0*/, float curv, float mapSize0,int maxIter0 = 20);
 
     void formObstaclesCoordinatesFromMap(vector<float> map, int mapSize);
     Node* getRandomPoint();
@@ -51,7 +51,7 @@ public:
     vector<geometry_msgs::Point> gen_final_course(int goalInd);
     float get_best_last_index();
     Node* choose_parent(Node* newNode, vector<int> nearInds);
-    void rewire(Node* newNode, vector<int> nearinds);
+    void rewire(vector<int> nearinds);
 
     vector<int> find_near_nodes(Node* newNode);
 
