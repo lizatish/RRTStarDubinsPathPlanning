@@ -166,7 +166,7 @@ DubinsPathPlanning::value DubinsPathPlanning::LRL(float alpha, float beta, float
 
 DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning_from_origin(float ex, float ey, float eyaw, float c){
     float dx = ex;
-    float  dy = ey;
+    float dy = ey;
     float D = sqrt(pow(dx, 2.0) + pow(dy, 2.0));
     float d = D / c;
 
