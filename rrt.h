@@ -1,7 +1,6 @@
 #ifndef RRT_H
 #define RRT_H
 
-#include <ros/ros.h>
 #include <geometry_msgs/Point.h>
 
 #include <math.h>

@@ -4,7 +4,7 @@ Node::Node(){
     y = 0;
     yaw = 0;
     cost = 0.0;
-    parent = NULL;
+    parent = NAN;
 }
 Node::Node(float x0, float y0, float yaw0)
 {
@@ -12,5 +12,6 @@ Node::Node(float x0, float y0, float yaw0)
     y = y0;
     yaw = yaw0;
     cost = 0.0;
-    parent = NULL;
+//    parent = std::numeric_limits<int>::quiet_NaN();
+    parent = -1;
 }

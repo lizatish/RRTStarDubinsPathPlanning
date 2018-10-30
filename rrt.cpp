@@ -188,7 +188,7 @@ vector<geometry_msgs::Point> RRT::gen_final_course(int goalInd){
     p.y = end->y;
     path.push_back(p);
 
-    do {
+    while(nodeList[goalInd]->parent != -1){
         Node* node = nodeList[goalInd];
 
         for(int i = node->path_x.size() - 1; i >= 0; i--){
@@ -197,7 +197,7 @@ vector<geometry_msgs::Point> RRT::gen_final_course(int goalInd){
             path.push_back(p);
         }
         goalInd = node->parent;
-    }while(nodeList[goalInd]->parent != 0);
+    }
     p.x = start->x;
     p.y = start->y;
     path.push_back(p);
@@ -282,25 +282,3 @@ bool RRT::collisionCheck(Node* node){
     }
     return true;
 }
-//            def DrawGraph(self, rnd=None){
-//                plt.clf()
-//                if rnd is not None:
-//                plt.plot(rnd.x, rnd.y, "^k")
-//                for node in self.nodeList:
-//                if node.parent is not None:
-//                plt.plot(node.path_x, node.path_y, "-g")
-//    #  plt.plot([node.x, self.nodeList[node.parent].x], [
-//    #  node.y, self.nodeList[node.parent].y], "-g")
-
-//                for (ox, oy, size) in self.obstacleList:
-//                plt.plot(ox, oy, "ok", ms=30 * size)
-
-//                dubins_path_planning.plot_arrow(
-//                self.start.x, self.start.y, self.start.yaw)
-//                dubins_path_planning.plot_arrow(
-//                self.end.x, self.end.y, self.end.yaw)
-
-//                plt.axis([-2, 15, -2, 15])
-//                plt.grid(True)
-//                plt.pause(0.01)
-//            }
