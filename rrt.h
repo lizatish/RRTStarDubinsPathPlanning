@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include <random>
+#include <algorithm>
 
 #include "node.h"
 #include "dubinspathplanning.h"
@@ -28,7 +29,7 @@ private:
     int goalSampleRate;
     int maxIter;
 
-    float minDistToObstacle = 0.1;
+    float minDistToObstacle = 1;
     vector<Node*> nodeList;
     float curvature;
 

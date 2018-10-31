@@ -12,7 +12,7 @@ vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs
     minRand = 0;
     maxRand = mapSize0;
     goalSampleRate = 10;
-    maxIter = 100;
+    maxIter = 150;
     //    vector<float> map = map0;
     curvature = curv;
 
@@ -35,8 +35,6 @@ vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs
             nodeList.push_back(newNode);
             rewire(nearInds);
         }
-        //        if (animation and i % 5 == 0)
-        //            self.DrawGraph(rnd=rnd);
     }
     int lastIndex = get_best_last_index();
 
@@ -64,7 +62,7 @@ Node* RRT::choose_parent(Node* newNode, vector<int> nearInds){
 
     vector<float> dlist;
     for(int i = 0; i < nearInds.size(); i++){
-        Node* tNode = steer(newNode, i);
+        Node* tNode = steer(newNode, nearInds[i]);
         if (collisionCheck(tNode)){
             dlist.push_back(tNode->cost);
         }
@@ -101,7 +99,7 @@ Node* RRT::steer(Node* rnd, int nind){
                 rnd->x, rnd->y, rnd->yaw,
                 curvature);
 
-    Node* newNode = new Node();
+    Node* newNode = new Node;
 
     if(path.yaw.size() > 0){
         newNode->yaw = path.yaw[path.yaw.size()-1];
@@ -168,8 +166,8 @@ float RRT::get_best_last_index(){
 
     vector<float> cost;
     for(int i = 0; i < fgoalinds.size(); i++){
-        if(nodeList[fgoalinds[i]]->cost != 0)
-            cost.push_back(nodeList[fgoalinds[i]]->cost);
+        //       if(nodeList[fgoalinds[i]]->cost != 0)
+        cost.push_back(nodeList[fgoalinds[i]]->cost);
     }
     float mincost = *min_element(cost.begin(), cost.end());
 
@@ -186,7 +184,11 @@ vector<geometry_msgs::Point> RRT::gen_final_course(int goalInd){
     geometry_msgs::Point p;
     p.x = end->x;
     p.y = end->y;
+    p.z = end->yaw;
     path.push_back(p);
+
+    if(goalInd < -1)
+        return path;
 
     while(nodeList[goalInd]->parent != -1){
         Node* node = nodeList[goalInd];
@@ -194,12 +196,14 @@ vector<geometry_msgs::Point> RRT::gen_final_course(int goalInd){
         for(int i = node->path_x.size() - 1; i >= 0; i--){
             p.x = node->path_x[i];
             p.y = node->path_y[i];
+            p.z = node->path_yaw[i];
             path.push_back(p);
         }
         goalInd = node->parent;
     }
     p.x = start->x;
     p.y = start->y;
+    p.z = start->yaw;
     path.push_back(p);
     return path;
 }
@@ -234,14 +238,14 @@ void RRT::rewire(vector<int> nearinds){
 
     int nnode = nodeList.size();
     for(int i = 0; i < nearinds.size(); i++){
-        Node* nearNode = nodeList[i];
+        Node* nearNode = nodeList[nearinds[i]];
         Node* tNode = steer(nearNode, nnode - 1);
 
         bool obstacleOK = collisionCheck(tNode);
         bool imporveCost = nearNode->cost > tNode->cost;
 
         if (obstacleOK && imporveCost){
-            nodeList[i] = tNode;
+            nodeList[nearinds[i]] = tNode;
         }
     }
 }

@@ -45,7 +45,7 @@ sensor_msgs::LaserScan current_scan;
 nav_msgs::Path pathMessage;
 // Точка для загрузки в сообщение пути
 geometry_msgs::PoseStamped point;
-
+// Сообщение с картой
 
 // Текущая локальная карта
 vector<int> localMap;
@@ -55,21 +55,16 @@ vector<int> globalMap;
 
 // Размер карты
 float mapResolution = 0.04;
-int mapSize = 15/0.04;
+int mapSize = 20/0.04;
 int main(int argc, char **argv){
-    // Сообщение с картой
-    nav_msgs::OccupancyGrid mapMessage;
-
     ros::init(argc, argv, "path_searcher_node");
-
 
     // Создание публикатора пути
     ros::NodeHandle l;
     ros::Publisher path_pub = l.advertise<nav_msgs::Path>("/path", 8);
+    ros::Publisher map_pub = l.advertise<nav_msgs::OccupancyGrid>("/mapPassability", 2);
 
-    // Создание публикатора карты
-    ros::NodeHandle m;
-    ros::Publisher map_pub = m.advertise<nav_msgs::OccupancyGrid>("/mapPassability", 2);
+    nav_msgs::OccupancyGrid mapMessage;
 
     mapMessage.info.height = mapSize;
     mapMessage.info.width = mapSize;
@@ -79,8 +74,9 @@ int main(int argc, char **argv){
     mapMessage.header.frame_id = "/map";
     mapMessage.header.stamp = ros::Time::now();
     mapMessage.data.resize(mapMessage.info.height * mapMessage.info.width);
-
+    //    mapMessageInitParams();
     pathMessageInitParams();
+
     vector<geometry_msgs::Point> obstacleList;
     geometry_msgs::Point p;
     p.x = 5;
@@ -108,55 +104,31 @@ int main(int argc, char **argv){
     start.y = mapSize*mapResolution/2;
     start.z = 0;
     geometry_msgs::Point goal;
-    goal.x = mapSize*mapResolution/2 + 6;
-    goal.y = mapSize*mapResolution/2 + 6;
+    goal.x = mapSize*mapResolution/2 - 5;
+    goal.y = mapSize*mapResolution/2 - 7;
     goal.z = 0;
 
-
-
-
-    //    for(int i = 0; i < mapSize*mapSize; i++){
-    //        mapMessage.data[i] = 0;
-    //    }
-
-    //    srand(time(0));
-    //    for(int i = 1; i < mapSize - 1; i++){
-    //        for(int j = 1; j < mapSize - 1; j++){
-    //            int k = rand()%2;
-    //            if(!k){
-    //                int x2 = i;
-    //                int y2 = j;
-    //                mapMessage.data[mapSize * y2 + x2] = 100;
-    //                mapMessage.data[mapSize * (y2 + 1) + (x2 + 1)] = 100;
-    //                mapMessage.data[mapSize * (y2 + 1) + x2] = 100;
-    //                mapMessage.data[mapSize * (y2 + 1) + (x2 - 1)] = 100;
-    //                mapMessage.data[mapSize * (y2 - 1) + (x2 + 1)] = 100;
-    //                mapMessage.data[mapSize * (y2 - 1) + (x2 - 1)] = 100;
-    //                mapMessage.data[mapSize * (y2 - 1) + x2] = 100;
-    //                mapMessage.data[mapSize * y2 + (x2 - 1)] = 100;
-    //                mapMessage.data[mapSize * y2 + (x2 + 1)] = 100;
-    //            }
-    //        }
-    //    }
-
-
+    //        DubinsPathPlanning pl;
+    //        DubinsPathPlanning::originPath path = pl.dubins_path_planning(0, 0, 0, -5, -7, 0, 1);
 
     RRT rrt;
-    vector<geometry_msgs::Point> path = rrt.Planning(start, goal, obstacleList, 1, 15);
+    vector<geometry_msgs::Point> path = rrt.Planning(start, goal, obstacleList, 1, 20);
 
     for (int k = path.size() - 1; k >= 0; k--){
         float nx = path[k].x;
         float ny = path[k].y;
+        //        float nx = path.x[k];
+        //        float ny = path.y[k];
 
         // Формируем путь
         point.pose.position.x = nx - mapSize/2*mapResolution;
         point.pose.position.y = ny - mapSize/2*mapResolution;
+        cout  <<  point.pose.position.x  << " " <<  point.pose.position.y
+               << " " << path[k].z<< endl;
+
         pathMessage.poses.push_back(point);
     }
-    for (int i = 0; i < path.size(); i++){
-        geometry_msgs::Point p0 = path.at(i);
-        cout  << p0.x  << " " << p0.y << endl;
-    }
+
 
     for(int i = 0; i < mapSize*mapSize; i++){
         mapMessage.data[i] = 0;
@@ -165,22 +137,17 @@ int main(int argc, char **argv){
         geometry_msgs::Point p0 = obstacleList.at(i);
         mapMessage.data[mapSize * (p0.y/mapResolution ) + (p0.x/mapResolution)] = 100;
     }
+//    while(1){
+        map_pub.publish(mapMessage);
+        path_pub.publish(pathMessage);
 
-    map_pub.publish(mapMessage);
-    path_pub.publish(pathMessage);
+        ros::spinOnce();
+//    }
 
-    ros::spinOnce();
 
 }
 void mapMessageInitParams(){
-    //    mapMessage.info.height = mapSize;
-    //    mapMessage.info.width = mapSize;
-    //    mapMessage.info.resolution = mapResolution;
-    //    mapMessage.info.origin.position.x = -mapSize * mapResolution/2;
-    //    mapMessage.info.origin.position.y = -mapSize * mapResolution/2;
-    //    mapMessage.header.frame_id = "/map";
-    //    mapMessage.header.stamp = ros::Time::now();
-    //    mapMessage.data.resize(mapMessage.info.height * mapMessage.info.width);
+
 }
 void pathMessageInitParams(){
     pathMessage.header.frame_id = "/map";

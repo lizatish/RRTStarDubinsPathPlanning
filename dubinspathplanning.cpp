@@ -11,7 +11,12 @@ float DubinsPathPlanning::mod2pi(float theta){
 
 
 float DubinsPathPlanning::pi_2_pi(float angle){
-    return fmod((angle + M_PI), (2 * M_PI) - M_PI);
+    if(angle < -M_PI)
+        return M_PI - abs(fmod((angle + M_PI), (2 * M_PI)));
+    else if(angle < 0)
+        return abs(fmod((angle + M_PI), (2 * M_PI))) - M_PI;
+    else
+        return  fmod((angle + M_PI), (2 * M_PI)) - M_PI;
 }
 
 
@@ -243,7 +248,7 @@ DubinsPathPlanning::originPath DubinsPathPlanning::dubins_path_planning(float st
     vector<float> px, py;
     for(int i = 0; i < lpx.size(); i++){
         px.push_back(cos(-startYaw) * lpx[i] + sin(-startYaw) * lpy[i] + startX);
-        py.push_back(- sin(-startYaw) * lpx[i] + cos(-startYaw) * lpy[i] + startY);
+        py.push_back( -sin(-startYaw) * lpx[i] + cos(-startYaw) * lpy[i] + startY);
     }
 
     vector<float> pyaw;
