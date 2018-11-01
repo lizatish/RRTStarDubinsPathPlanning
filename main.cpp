@@ -5,6 +5,7 @@
 #include <nav_msgs/Path.h>
 
 void drawCircleObstacles(float radius);
+void formObstacleList();
 
 // Инициализация параметров карты и пути
 void mapMessageInitParams();
@@ -41,36 +42,7 @@ int main(int argc, char **argv){
         gMap.push_back(0);
     }
 
-    geometry_msgs::Point p;
-
-    p.x = 5;
-    p.y = 5;
-    obstacleList.push_back(p);
-    p.x = 3;
-    p.y = 3;
-    obstacleList.push_back(p);
-    p.x = 3;
-    p.y = 3;
-    obstacleList.push_back(p);
-    p.x = 7;
-    p.y = 5;
-    obstacleList.push_back(p);
-    p.x = 6;
-    p.y = 5;
-    obstacleList.push_back(p);
-    p.x = 1;
-    p.y = 2;
-    obstacleList.push_back(p);
-    p.x = 0;
-    p.y = 3;
-    obstacleList.push_back(p);
-    p.x = 2;
-    p.y = 6;
-    obstacleList.push_back(p);
-    p.x = 2;
-    p.y = 5;
-    obstacleList.push_back(p);
-
+    formObstacleList();
 
     // Координаты старта и финиша
     geometry_msgs::Point start;
@@ -113,9 +85,41 @@ int main(int argc, char **argv){
 
         ros::spinOnce();
     }
-
-
 }
+void formObstacleList(){
+    geometry_msgs::Point p;
+    p.x = 5;
+    p.y = 5;
+    obstacleList.push_back(p);
+    p.x = 3;
+    p.y = 3;
+    obstacleList.push_back(p);
+    p.x = 3;
+    p.y = 3;
+    obstacleList.push_back(p);
+    p.x = 7;
+    p.y = 5;
+    obstacleList.push_back(p);
+    p.x = 6;
+    p.y = 5;
+    obstacleList.push_back(p);
+    p.x = 1;
+    p.y = 2;
+    obstacleList.push_back(p);
+    p.x = 0;
+    p.y = 3;
+    obstacleList.push_back(p);
+    p.x = 2;
+    p.y = 6;
+    obstacleList.push_back(p);
+    p.x = 2;
+    p.y = 5;
+    obstacleList.push_back(p);
+    p.x = 4;
+    p.y = 3;
+    obstacleList.push_back(p);
+}
+
 void mapMessageInitParams(){
     mapMessage.info.height = mapSize;
     mapMessage.info.width = mapSize;
