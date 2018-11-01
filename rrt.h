@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include <random>
-#include <algorithm>
 
 #include "node.h"
 #include "dubinspathplanning.h"

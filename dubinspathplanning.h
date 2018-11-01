@@ -1,10 +1,10 @@
 #ifndef DUBINSPATHPLANNING_H
 #define DUBINSPATHPLANNING_H
 
-#include <math.h>
 #include <cmath>
 #include <vector>
 #include <iostream>
+
 using namespace std;
 
 class DubinsPathPlanning
