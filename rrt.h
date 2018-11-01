@@ -20,6 +20,7 @@ private:
     vector<float> map;
     vector<geometry_msgs::Point> obstacleList;
     float mapSize;
+    float mapResolution = 0.04;
 
     int minRand;
     int maxRand;
@@ -37,10 +38,11 @@ private:
 public:
     RRT();
 
-    vector<geometry_msgs::Point> Planning(geometry_msgs::Point s, geometry_msgs::Point g,
-                     vector<geometry_msgs::Point> ob /* vector<float> map0*/, float curv, float mapSize0,int maxIter0 = 20);
+    float metrs2cells(float metrs);
 
-    void formObstaclesCoordinatesFromMap(vector<float> map, int mapSize);
+    vector<geometry_msgs::Point> Planning(geometry_msgs::Point s, geometry_msgs::Point g,
+                     vector<geometry_msgs::Point> ob, float curv, float mapSize0,int maxIter0 = 20);
+
     Node* getRandomPoint();
     int getNearestListIndex(Node* rnd);
 

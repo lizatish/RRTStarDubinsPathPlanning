@@ -42,14 +42,15 @@ int main(int argc, char **argv){
     }
 
     geometry_msgs::Point p;
+
     p.x = 5;
     p.y = 5;
     obstacleList.push_back(p);
     p.x = 3;
-    p.y = 6;
+    p.y = 3;
     obstacleList.push_back(p);
     p.x = 3;
-    p.y = 8;
+    p.y = 3;
     obstacleList.push_back(p);
     p.x = 7;
     p.y = 5;
@@ -57,21 +58,33 @@ int main(int argc, char **argv){
     p.x = 6;
     p.y = 5;
     obstacleList.push_back(p);
+    p.x = 1;
+    p.y = 2;
+    obstacleList.push_back(p);
+    p.x = 0;
+    p.y = 3;
+    obstacleList.push_back(p);
+    p.x = 2;
+    p.y = 6;
+    obstacleList.push_back(p);
+    p.x = 2;
+    p.y = 5;
+    obstacleList.push_back(p);
 
 
     // Координаты старта и финиша
     geometry_msgs::Point start;
-    start.x = mapSize*mapResolution/2 - 5;
-    start.y = mapSize*mapResolution/2 - 3;
+    start.x = 0;
+    start.y = 0;
     start.z = 0.785398;
     geometry_msgs::Point goal;
-    goal.x = mapSize*mapResolution/2 + 7;
-    goal.y = mapSize*mapResolution/2 + 6;
-    goal.z = 0.785398;
+    goal.x = 4;
+    goal.y = 8;
+    goal.z = -4*0.78;
 
     // Запуск планировщика
     RRT rrt;
-    vector<geometry_msgs::Point> path = rrt.Planning(start, goal, obstacleList, 3, 20);
+    vector<geometry_msgs::Point> path = rrt.Planning(start, goal, obstacleList, 1, mapSize);
 
     // Отрисовка пути
     for (int k = path.size() - 1; k >= 0; k--){
@@ -93,13 +106,13 @@ int main(int argc, char **argv){
         mapMessage.data[i] = gMap[i];
     }
 
-    //    while(1){
-    // Публикация сообщений
-    map_pub.publish(mapMessage);
-    path_pub.publish(pathMessage);
+    for(;;){
+        // Публикация сообщений
+        map_pub.publish(mapMessage);
+        path_pub.publish(pathMessage);
 
-    ros::spinOnce();
-    //    }
+        ros::spinOnce();
+    }
 
 
 }
@@ -123,11 +136,13 @@ void drawCircleObstacles(float radius){
     // Проходим по всем координатам препятствий
     for(int i = 0; i < obstacleList.size(); i++){
         geometry_msgs::Point p0 = obstacleList.at(i);
-        // Рисуем препятствие
-        gMap[mapSize * (p0.y/mapResolution ) + (p0.x/mapResolution)] = 100;
 
-        int x0 = p0.x/mapResolution;
-        int y0 = p0.y/mapResolution;
+        int x0 = p0.x/mapResolution + mapSize/2;
+        int y0 = p0.y/mapResolution + mapSize/2;
+        // Рисуем препятствие
+        gMap[mapSize * (y0) + (x0)] = 100;
+
+
         // Отрисовка кругов
         for(int p = x0 - int(radius / mapResolution) - 1; p < x0 + int(radius/ mapResolution + 1); p++) {
             for(int q = y0 - int(radius / mapResolution - 1); q < y0 + int(radius / mapResolution + 1); q++) {

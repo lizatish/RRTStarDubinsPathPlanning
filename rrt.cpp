@@ -3,22 +3,26 @@
 RRT::RRT(){
 }
 vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs::Point g,
-                                           vector<geometry_msgs::Point> ob ,/*vector<float> map0,*/ float curv, float mapSize0,int maxIter0)
+                                           vector<geometry_msgs::Point> ob , float curv, float mapSize0,int maxIter0)
 {
 
-    start = new Node(s.x, s.y, s.z);
-    end = new Node(g.x, g.y, g.z);
     mapSize = mapSize0;
+    start = new Node(metrs2cells(s.x), metrs2cells(s.y), s.z);
+    end = new Node(metrs2cells(g.x), metrs2cells(g.y), g.z);
+
     minRand = 0;
-    maxRand = mapSize0;
+    maxRand = mapSize0*mapResolution;
     goalSampleRate = 10;
     maxIter = 100;
-    //    vector<float> map = map0;
     curvature = curv;
+    for(int i = 0; i < ob.size(); i++){
+        geometry_msgs::Point p = ob.at(i);
+        geometry_msgs::Point k;
 
-    obstacleList =  ob ;
-    // Найти массив координат препятствий
-    //formObstaclesCoordinatesFromMap(map, mapSize);
+        k.x = metrs2cells(p.x);
+        k.y = metrs2cells(p.y);
+        obstacleList.push_back(k);
+    }
 
     nodeList.push_back(start);
 
@@ -41,18 +45,9 @@ vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs
     vector<geometry_msgs::Point> path = gen_final_course(lastIndex);
     return path;
 }
-void RRT::formObstaclesCoordinatesFromMap(vector<float> map, int mapSize){
-
-    for(int i = 0; i < mapSize; i++){
-        for(int j = 0; j < mapSize; j++){
-            if(map[mapSize * j + i] == 100){
-                geometry_msgs::Point p;
-                p.x = i;
-                p.y = j;
-                obstacleList.push_back(p);
-            }
-        }
-    }
+float RRT::metrs2cells(float metrs){
+//    return metrs;
+        return (mapSize/2*mapResolution + metrs);
 }
 
 Node* RRT::choose_parent(Node* newNode, vector<int> nearInds){
@@ -279,8 +274,8 @@ bool RRT::collisionCheck(Node* node){
             dx = p.x - ix;
             dy = p.y - iy;
 
-            d = dx * dx + dy * dy;
-            if (d <= pow(minDistToObstacle, 2))
+            d = sqrt(pow(dx, 2) + pow(dy, 2));
+            if (d <= minDistToObstacle)
                 return false;
         }
     }
