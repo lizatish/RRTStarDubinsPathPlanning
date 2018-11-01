@@ -12,7 +12,7 @@ vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs
     minRand = 0;
     maxRand = mapSize0;
     goalSampleRate = 10;
-    maxIter = 150;
+    maxIter = 100;
     //    vector<float> map = map0;
     curvature = curv;
 

@@ -31,6 +31,7 @@
 #include <iostream>
 #include <assert.h>
 
+void mapTransformation();
 
 // Инициализация параметров карты и пути
 void mapMessageInitParams();
@@ -47,15 +48,15 @@ nav_msgs::Path pathMessage;
 geometry_msgs::PoseStamped point;
 // Сообщение с картой
 
-// Текущая локальная карта
-vector<int> localMap;
+vector<geometry_msgs::Point> obstacleList;
 
-// Текущая открытая глобальная карта
-vector<int> globalMap;
+const float ROBOT_WIDTH_HALF = 0.5;
+vector<int> gMap;
 
 // Размер карты
 float mapResolution = 0.04;
 int mapSize = 20/0.04;
+
 int main(int argc, char **argv){
     ros::init(argc, argv, "path_searcher_node");
 
@@ -77,7 +78,6 @@ int main(int argc, char **argv){
     //    mapMessageInitParams();
     pathMessageInitParams();
 
-    vector<geometry_msgs::Point> obstacleList;
     geometry_msgs::Point p;
     p.x = 5;
     p.y = 5;
@@ -100,19 +100,19 @@ int main(int argc, char **argv){
 
 
     geometry_msgs::Point start;
-    start.x = mapSize*mapResolution/2;
-    start.y = mapSize*mapResolution/2;
-    start.z = 0;
+    start.x = mapSize*mapResolution/2 - 5;
+    start.y = mapSize*mapResolution/2 - 3;
+    start.z = 0.785398;
     geometry_msgs::Point goal;
-    goal.x = mapSize*mapResolution/2 - 5;
-    goal.y = mapSize*mapResolution/2 - 7;
-    goal.z = 0;
+    goal.x = mapSize*mapResolution/2 - 7;
+    goal.y = mapSize*mapResolution/2 - 6;
+    goal.z = 0.785398;
 
     //        DubinsPathPlanning pl;
     //        DubinsPathPlanning::originPath path = pl.dubins_path_planning(0, 0, 0, -5, -7, 0, 1);
 
     RRT rrt;
-    vector<geometry_msgs::Point> path = rrt.Planning(start, goal, obstacleList, 1, 20);
+    vector<geometry_msgs::Point> path = rrt.Planning(start, goal, obstacleList, 3, 20);
 
     for (int k = path.size() - 1; k >= 0; k--){
         float nx = path[k].x;
@@ -130,19 +130,20 @@ int main(int argc, char **argv){
     }
 
 
-    for(int i = 0; i < mapSize*mapSize; i++){
-        mapMessage.data[i] = 0;
-    }
-    for(int i = 0; i < obstacleList.size(); i++){
-        geometry_msgs::Point p0 = obstacleList.at(i);
-        mapMessage.data[mapSize * (p0.y/mapResolution ) + (p0.x/mapResolution)] = 100;
-    }
-//    while(1){
-        map_pub.publish(mapMessage);
-        path_pub.publish(pathMessage);
+    mapTransformation();
+        for(int i = 0; i < mapSize*mapSize; i++){
+            mapMessage.data[i] = gMap[i];
+        }
+        for(int i = 0; i < obstacleList.size(); i++){
+            geometry_msgs::Point p0 = obstacleList.at(i);
+            mapMessage.data[mapSize * (p0.y/mapResolution ) + (p0.x/mapResolution)] = 100;
+        }
+    //    while(1){
+    map_pub.publish(mapMessage);
+    path_pub.publish(pathMessage);
 
-        ros::spinOnce();
-//    }
+    ros::spinOnce();
+    //    }
 
 
 }
@@ -152,4 +153,28 @@ void mapMessageInitParams(){
 void pathMessageInitParams(){
     pathMessage.header.frame_id = "/map";
     pathMessage.header.stamp = ros::Time::now();
+}
+
+void mapTransformation(){
+
+    for(int i = 0; i < mapSize*mapSize; i++){
+        gMap.push_back(0);
+    }
+
+    for(int i = 0; i < obstacleList.size(); i++){
+        geometry_msgs::Point p0 = obstacleList.at(i);
+        gMap[mapSize * (p0.y/mapResolution ) + (p0.x/mapResolution)] = 100;
+
+        int x0 = p0.x/mapResolution;
+        int y0 = p0.y/mapResolution;
+        for(int p = x0 - int(ROBOT_WIDTH_HALF / mapResolution) - 1; p < x0 + int(ROBOT_WIDTH_HALF/ mapResolution + 1); p++) {
+            for(int q = y0 - int(ROBOT_WIDTH_HALF / mapResolution - 1); q < y0 + int(ROBOT_WIDTH_HALF / mapResolution + 1); q++) {
+                float dist =  sqrt(pow((p - x0), 2) + pow((q - y0), 2))*mapResolution;
+                if(dist > ROBOT_WIDTH_HALF)
+                    continue;
+
+                gMap[mapSize * q + p] = 100;
+            }
+        }
+    }
 }

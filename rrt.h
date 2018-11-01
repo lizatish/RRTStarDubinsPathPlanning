@@ -29,7 +29,7 @@ private:
     int goalSampleRate;
     int maxIter;
 
-    float minDistToObstacle = 1;
+    float minDistToObstacle = 0.5 + 0.04;
     vector<Node*> nodeList;
     float curvature;
 
