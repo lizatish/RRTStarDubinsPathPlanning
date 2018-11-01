@@ -3,18 +3,23 @@
 RRT::RRT(){
 }
 vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs::Point g,
-                                           vector<geometry_msgs::Point> ob , float curv, float mapSize0,int maxIter0)
+                                           vector<geometry_msgs::Point> ob , float curv,
+                                           float robot_width_half,float mapSize0,
+                                           float mapRes,int maxIter0)
 {
-
     mapSize = mapSize0;
+    mapResolution = mapRes;
+    minRand = 0;
+    maxRand = mapSize0*mapResolution;
+    // РАЗОБРАТЬСЯ С ЭТИМ ПАРАМЕТРОМ
+    goalSampleRate = 10;
+    maxIter = maxIter0;
+    curvature = curv;
+    minDistToObstacle = robot_width_half + mapResolution;
+
     start = new Node(metrs2cells(s.x), metrs2cells(s.y), s.z);
     end = new Node(metrs2cells(g.x), metrs2cells(g.y), g.z);
 
-    minRand = 0;
-    maxRand = mapSize0*mapResolution;
-    goalSampleRate = 10;
-    maxIter = 100;
-    curvature = curv;
     for(int i = 0; i < ob.size(); i++){
         geometry_msgs::Point p = ob.at(i);
         geometry_msgs::Point k;
@@ -46,8 +51,7 @@ vector<geometry_msgs::Point> RRT::Planning(geometry_msgs::Point s, geometry_msgs
     return path;
 }
 float RRT::metrs2cells(float metrs){
-//    return metrs;
-        return (mapSize/2*mapResolution + metrs);
+    return (mapSize/2*mapResolution + metrs);
 }
 
 Node* RRT::choose_parent(Node* newNode, vector<int> nearInds){
@@ -161,7 +165,6 @@ float RRT::get_best_last_index(){
 
     vector<float> cost;
     for(int i = 0; i < fgoalinds.size(); i++){
-        //       if(nodeList[fgoalinds[i]]->cost != 0)
         cost.push_back(nodeList[fgoalinds[i]]->cost);
     }
     float mincost = *min_element(cost.begin(), cost.end());
@@ -260,6 +263,8 @@ int RRT::getNearestListIndex(Node* rnd){
 
     return minIndex;
 }
+
+// Проверка на пересечение с препятствиями
 bool RRT::collisionCheck(Node* node){
 
     float ix, iy, dx, dy, d;
@@ -274,8 +279,9 @@ bool RRT::collisionCheck(Node* node){
             dx = p.x - ix;
             dy = p.y - iy;
 
-            d = sqrt(pow(dx, 2) + pow(dy, 2));
-            if (d <= minDistToObstacle)
+           d = pow(dx, 2) + pow(dy, 2);
+
+            if (d <= pow(minDistToObstacle,2))
                 return false;
         }
     }

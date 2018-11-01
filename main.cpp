@@ -27,6 +27,8 @@ vector<int> gMap;
 float mapResolution = 0.04;
 int mapSize = 20/0.04;
 
+const int CURVATURE = 1;
+
 int main(int argc, char **argv){
     ros::init(argc, argv, "path_searcher_node");
 
@@ -56,7 +58,8 @@ int main(int argc, char **argv){
 
     // Запуск планировщика
     RRT rrt;
-    vector<geometry_msgs::Point> path = rrt.Planning(start, goal, obstacleList, 1, mapSize);
+    vector<geometry_msgs::Point> path = rrt.Planning(start, goal, obstacleList,
+                                                     CURVATURE, ROBOT_WIDTH_HALF, mapSize);
 
     // Отрисовка пути
     for (int k = path.size() - 1; k >= 0; k--){
@@ -90,9 +93,6 @@ void formObstacleList(){
     geometry_msgs::Point p;
     p.x = 5;
     p.y = 5;
-    obstacleList.push_back(p);
-    p.x = 3;
-    p.y = 3;
     obstacleList.push_back(p);
     p.x = 3;
     p.y = 3;

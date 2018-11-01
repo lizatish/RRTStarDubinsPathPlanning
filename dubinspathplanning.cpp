@@ -9,7 +9,6 @@ float DubinsPathPlanning::mod2pi(float theta){
     return theta - 2.0 * M_PI * floor(theta / 2.0 / M_PI);
 }
 
-
 float DubinsPathPlanning::pi_2_pi(float angle){
     if(angle < -M_PI)
         return M_PI - abs(fmod((angle + M_PI), (2 * M_PI)));
@@ -18,7 +17,6 @@ float DubinsPathPlanning::pi_2_pi(float angle){
     else
         return  fmod((angle + M_PI), (2 * M_PI)) - M_PI;
 }
-
 
 DubinsPathPlanning::value DubinsPathPlanning::LSL(float alpha, float beta, float d){
     float sa = sin(alpha);
